@@ -17,13 +17,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var score = 0
     var lives = 3
     var removedBricks = 0
-    
     var ball = SKShapeNode()
     var paddle = SKSpriteNode()
     var bricks = [SKSpriteNode]()
     var loseZone = SKSpriteNode()
     
+    override func didMove(to view: SKView) {
+        physicsWorld.contactDelegate = self
+        self.physicsBody = SKPhysicsBody(edgeLoopFrom: frame)
+        createBackground()
+        makeLoseZone()
+        makeLabels()
+        resetGame()
+    }
     
+    func resetGame() {
+        makeBall()
+        makePaddle()
+        makeBricks()
+        updateLabels()
+    }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
@@ -56,15 +69,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func didBegin(_ contact: SKPhysicsContact) {
         for brick in bricks {
-            if contact.bodyA.node == brick || contact.bodyB.node == brick {
+            if contact.bodyA.node == brick ||
+                contact.bodyB.node == brick {
                 score += 1
                 ball.physicsBody!.velocity.dx *= CGFloat(1.02)
                 ball.physicsBody!.velocity.dy *= CGFloat(1.02)
                 updateLabels()
-                brick.removeFromParent()
-                removedBricks += 1
-                if removedBricks == bricks.count {
-                    gameOver(winner: true)
+                if brick.color == .blue {
+                    brick.color = .orange
+                }
+                else if brick.color == .orange {
+                    brick.color = .green
+                }
+                else {
+                    brick.removeFromParent()
+                    removedBricks += 1
+                    if removedBricks == bricks.count {
+                        gameOver(winner: true)
+                    }
                 }
             }
         }
@@ -78,25 +100,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 gameOver(winner: false)
             }
         }
-    }
-
-
-    override func didMove(to view: SKView) {
-        physicsWorld.contactDelegate = self
-        self.physicsBody = SKPhysicsBody(edgeLoopFrom: frame)
-        createBackground()
-        makeBall()
-        makePaddle()
-        makeBricks()
-        makeLoseZone()
-        makeLabels()
-    }
-    
-    func resetGame() {
-        makeBall()
-        makePaddle()
-        makeBricks()
-        updateLabels()
     }
     
     func kickBall() {
